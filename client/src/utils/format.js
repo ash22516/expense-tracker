@@ -1,13 +1,30 @@
-// Change this to show another currency (for example 'USD', 'INR', 'EUR').
-export const CURRENCY = 'NPR';
+const DEFAULT_CURRENCY = 'NZD';
+const FALLBACK = ['NZD', 'NPR', 'USD', 'EUR', 'GBP', 'INR', 'JPY', 'AUD', 'CAD', 'CNY', 'AED', 'SGD', 'CHF'];
 
-const money = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: CURRENCY,
-  minimumFractionDigits: 2,
-});
+// The chosen currency is remembered in the browser.
+export const getCurrency = () => localStorage.getItem('currency') || DEFAULT_CURRENCY;
+export const setCurrency = (code) => localStorage.setItem('currency', code);
 
-export const formatMoney = (n) => money.format(n || 0);
+export const CURRENCY_LIST = (() => {
+  try {
+    const list = Intl.supportedValuesOf('currency');
+    return list.length ? list : FALLBACK;
+  } catch {
+    return FALLBACK;
+  }
+})();
+
+export function currencyName(code) {
+  try {
+    return new Intl.DisplayNames(['en'], { type: 'currency' }).of(code) || code;
+  } catch {
+    return code;
+  }
+}
+
+export function formatMoney(n) {
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: getCurrency() }).format(n || 0);
+}
 
 export const CATEGORIES = {
   expense: ['Food', 'Rent', 'Transport', 'Bills', 'Shopping', 'Health', 'Entertainment', 'Education', 'Other'],
